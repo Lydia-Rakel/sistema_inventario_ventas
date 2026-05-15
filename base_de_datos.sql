@@ -31,3 +31,10 @@ INSERT INTO productos (nombre_producto, categoria, stock, precio) VALUES
 ('Mouse Inalámbrico Logitech', 'Accesorios', 25, 15.50),
 ('Impresora Epson EcoTank', 'Oficina', 5, 210.00),
 ('Resma de Papel Tamaño Carta', 'Papelería', 100, 4.25);
+
+SELECT * FROM productos WHERE id = 2;
+
+UPDATE productos SET precio = 12.00 WHERE id = 2;
+
+DELETE FROM productos WHERE id = 3;
+
