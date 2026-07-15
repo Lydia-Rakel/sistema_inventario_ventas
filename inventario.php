@@ -111,6 +111,19 @@ tr:hover {
     font-weight: bold;
 }
 
+/* --- ESTILO AGREGADO PARA EL PASO 1 --- */
+.btn-editar { 
+    background-color: #f59e0b; 
+    color: white; 
+    padding: 6px 12px; 
+    text-decoration: none; 
+    border-radius: 4px; 
+    font-weight: bold; 
+    margin-right: 5px; 
+    font-size: 13px;
+    display: inline-block;
+}
+
 .btn-eliminar {
     background-color: #ef4444;
     color: white;
@@ -119,6 +132,7 @@ tr:hover {
     border-radius: 4px;
     font-size: 13px;
     font-weight: bold;
+    display: inline-block;
 }
 
 .btn-eliminar:hover {
@@ -198,10 +212,13 @@ tr:hover {
                 </td>
 
                 <td>
+                    <a href="editar_producto.php?id=<?php echo $fila['id']; ?>" class="btn-editar">
+                        ✏️ Editar
+                    </a>
+
                     <a href="eliminar_producto.php?id=<?php echo $fila['id']; ?>"
                        class="btn-eliminar"
                        onclick="return confirm('¿Seguro que deseas eliminar el producto: <?php echo $fila['nombre_producto']; ?>?');">
-
                        🗑️ Eliminar
                     </a>
                 </td>
