@@ -74,3 +74,20 @@ CREATE TABLE IF NOT EXISTS proveedores (
 INSERT INTO proveedores (nombre_empresa, contacto, telefono, direccion) VALUES
 ('Tech Data El Salvador', 'Juan Pérez', '2255-8899', 'San Salvador, Col. Escalón'),
 ('Distribuidora de Papel', 'María Gómez', '2666-4433', 'San Miguel, Centro');
+
+
+
+-- ====================================================================
+-- MÓDULO DE COMPRAS: ARQUITECTURA MAESTRO-DETALLE (Guía 23)
+-- ====================================================================
+-- 1. Tabla Maestra de Compras (Cabecera de Factura)
+-- 1. Insertar la cabecera en la tabla compras (Proveedor 1, Usuario 1)
+INSERT INTO compras (proveedor_id, usuario_id, total) 
+VALUES (1, 1, 125.79);
+
+-- 2. Insertar los detalles asociados a la compra número 1
+INSERT INTO detalle_compras (compra_id, producto_id, cantidad, precio_compra) 
+VALUES (1, 6, 1, 100.79);
+
+INSERT INTO detalle_compras (compra_id, producto_id, cantidad, precio_compra) 
+VALUES (1, 2, 1, 25.00);
