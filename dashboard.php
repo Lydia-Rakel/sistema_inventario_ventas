@@ -100,11 +100,13 @@ $precio_maximo = $fila_caro['max_precio'] ? $fila_caro['max_precio'] : 0;
         .menu-modulos { 
             display: flex; 
             gap: 20px; 
+            flex-wrap: wrap;
         }
         .modulo { 
             background: #3b82f6; 
             color: white; 
             flex: 1; 
+            min-width: 200px;
             padding: 20px; 
             text-align: center; 
             border-radius: 8px; 
@@ -114,7 +116,7 @@ $precio_maximo = $fila_caro['max_precio'] ? $fila_caro['max_precio'] : 0;
             transition: background 0.3s; 
         }
         .modulo:hover { 
-            background: #2563eb; 
+            filter: brightness(0.9);
         }
     </style>
 </head>
@@ -148,8 +150,8 @@ $precio_maximo = $fila_caro['max_precio'] ? $fila_caro['max_precio'] : 0;
 
     <h2 style="color: #334155;">Módulos del Sistema</h2>
     <div class="menu-modulos">
-        <a href="proveedores.php" class="modulo" style="background:#8b5cf6;">🚚 Módulo de
-Proveedores</a>
+        <a href="proveedores.php" class="modulo" style="background:#8b5cf6;">🚚 Módulo de Proveedores</a>
+        <a href="nueva_compra.php" class="modulo" style="background:#10b981;">📥 Registrar Ingreso de Mercadería</a>
         <a href="inventario.php" class="modulo">📦 Ir al Catálogo de Inventario</a>
         <a href="#" class="modulo" style="background:#64748b;">🛒 Punto de Venta (Próximamente)</a>
     </div>
