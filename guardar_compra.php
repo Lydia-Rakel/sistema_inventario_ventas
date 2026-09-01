@@ -1,52 +1,65 @@
 <?php
 session_start();
-if (!isset($_SESSION['user_id'])) { header("Location: index.php"); exit(); }
+
+// 1. Candado de seguridad: Solo usuarios logueados
+if (!isset($_SESSION['user_id'])) {
+    header("Location: index.php");
+    exit();
+}
+
 require_once 'conexion.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $proveedor_id     = $_POST['proveedor_id'];
+    $producto_id      = $_POST['producto_id'];
+    $cantidad         = (int)$_POST['cantidad'];
+    $precio_unitario  = (float)$_POST['precio_unitario'];
+    $total_compra     = $cantidad * $precio_unitario;
 
-// 1. Capturar datos del formulario y la sesión
-$usuario_id = $_SESSION['user_id']; // Quién está operando el sistema
-$proveedor_id = $_POST['proveedor_id'];
-$producto_id = $_POST['producto_id'];
-$cantidad = $_POST['cantidad'];
-$precio_compra = $_POST['precio_compra'];
+    // Iniciar transacción de base de datos
+    $conn->begin_transaction();
 
-// Calcular el total general de la factura
-$total_compra = $cantidad * $precio_compra;
+    try {
+        // --- FASE 1: INSERTAR CABECERA DE LA COMPRA ---
+        $sql_cabecera = "INSERT INTO compras (proveedor_id, total, fecha) VALUES (?, ?, NOW())";
+        $stmt1 = $conn->prepare($sql_cabecera);
+        $stmt1->bind_param("id", $proveedor_id, $total_compra);
+        $stmt1->execute();
+        
+        // Obtener el ID generado para la compra recién creada
+        $compra_id = $conn->insert_id;
+        $stmt1->close();
 
-try {
-// --- FASE 1: INSERTAR MAESTRO (Cabecera) ---
-$sql_compras = "INSERT INTO compras (proveedor_id, usuario_id, total) VALUES (?, ?, ?)";
-$stmt1 = $conn->prepare($sql_compras);
-$stmt1->bind_param("iid", $proveedor_id, $usuario_id, $total_compra); // Integer, Integer,
-Double
-$stmt1->execute();
+        // --- FASE 2: INSERTAR DETALLE DE LA COMPRA ---
+        $sql_detalle = "INSERT INTO detalle_compras (compra_id, producto_id, cantidad, precio_unitario) VALUES (?, ?, ?, ?)";
+        $stmt2 = $conn->prepare($sql_detalle);
+        $stmt2->bind_param("iiid", $compra_id, $producto_id, $cantidad, $precio_unitario);
+        $stmt2->execute();
+        $stmt2->close();
 
-// ¡CAPTURAMOS EL ID RECIÉN CREADO!
-$id_nueva_compra = $conn->insert_id;
-$stmt1->close();
+        // --- FASE 3: ACTUALIZAR EL INVENTARIO FÍSICO (Actualización Relativa) ---
+        // Le ordenamos a MySQL que sume la cantidad comprada al stock actual del producto
+        $sql_stock = "UPDATE productos SET stock = stock + ? WHERE id = ?";
+        $stmt3 = $conn->prepare($sql_stock);
+        // Vinculamos la cantidad comprada y el ID del producto (ambos enteros "ii")
+        $stmt3->bind_param("ii", $cantidad, $producto_id);
+        $stmt3->execute();
+        $stmt3->close();
 
-// --- FASE 2: INSERTAR DETALLE (Líneas) ---
-$sql_detalle = "INSERT INTO detalle_compras (compra_id, producto_id, cantidad,
-precio_compra) VALUES (?, ?, ?, ?)";
-$stmt2 = $conn->prepare($sql_detalle);
-// Usamos la variable $id_nueva_compra para amarrar este detalle a su cabecera
-$stmt2->bind_param("iiid", $id_nueva_compra, $producto_id, $cantidad, $precio_compra);
-$stmt2->execute();
-$stmt2->close();
+        // Confirmar la transacción
+        $conn->commit();
 
-// (En la próxima clase aprenderemos a sumar estas cantidades al stock del inventario)
+        // Redirigir al dashboard tras completar la compra con éxito
+        header("Location: dashboard.php");
+        exit();
 
-// Redirigir con éxito
-header("Location: dashboard.php");
-exit();
-
-} catch (mysqli_sql_exception $e) {
-die("Error crítico en la transacción Maestro-Detalle: " . $e->getMessage());
-}
+    } catch (Exception $e) {
+        // En caso de error, revertir todos los cambios
+        $conn->rollback();
+        echo "Error al procesar la compra: " . $e->getMessage();
+    }
 } else {
-header("Location: dashboard.php");
-exit();
+    header("Location: dashboard.php");
+    exit();
 }
 ?>
